@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCR Information Extractor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        form {
+            margin-top: 20px;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        input[type="file"] {
+            display: none;
+        }
+        label {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        label:hover {
+            background-color: #45a049;
+        }
+        button {
+            padding: 12px 24px;
+            background-color: #008CBA;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 15px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #007a9e;
+        }
+        #result {
+            margin-top: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            text-align: left;
+            background-color: white;
+        }
+        #fileName {
+            margin-top: 10px;
+            font-style: italic;
+            color: #666;
+        }
+        #reuploadBtn {
+            background-color: #ff9800;
+            margin-left: 10px;
+        }
+        #reuploadBtn:hover {
+            background-color: #e68a00;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>OCR Information Extractor</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <label for="aadhaar" id="fileLabel">Choose Aadhaar Image</label>
+        <input type="file" id="aadhaar" name="aadhaar" accept="image/*" required>
+        <div id="fileName"></div>
+        <br>
+        <button type="submit" id="submitBtn">Upload and Process</button>
+        <button type="button" id="reuploadBtn" class="hidden">Reupload and Process</button>
+    </form>
+    <div id="result"></div>
+    <script>
+        const fileInput = document.getElementById('aadhaar');
+        const fileLabel = document.getElementById('fileLabel');
+        const fileName = document.getElementById('fileName');
+        const submitBtn = document.getElementById('submitBtn');
+        const reuploadBtn = document.getElementById('reuploadBtn');
+        const resultDiv = document.getElementById('result');
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                fileName.textContent = `File selected: ${e.target.files[0].name}`;
+                fileLabel.textContent = 'Change Image';
+                submitBtn.textContent = 'Upload and Process';
+                reuploadBtn.classList.remove('hidden');
+            }
+        });
+
+        async function processImage(formData) {
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            resultDiv.innerHTML = `
+                <h2>Extracted Information:</h2>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+        }
+
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            await processImage(formData);
+        });
+
+        reuploadBtn.addEventListener('click', async () => {
+            fileInput.value = '';
+            fileName.textContent = '';
+            fileLabel.textContent = 'Choose Aadhaar Image';
+            submitBtn.textContent = 'Upload and Process';
+            reuploadBtn.classList.add('hidden');
+            resultDiv.innerHTML = '';
+        });
+    </script>
+</body>
+</html>
